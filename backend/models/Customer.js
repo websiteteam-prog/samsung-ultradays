@@ -6,7 +6,7 @@ const Customer = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false },
-    mobile: { type: DataTypes.STRING, allowNull: false },
+    mobile: { type: DataTypes.STRING, allowNull: false, unique: true },
     imei: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false },
     city: { type: DataTypes.STRING, allowNull: false },

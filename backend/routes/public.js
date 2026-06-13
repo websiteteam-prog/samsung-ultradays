@@ -60,6 +60,12 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Please verify your mobile number with OTP first." });
     }
 
+    // Mobile number must be unique — one registration per number
+    const existing = await Customer.findOne({ where: { mobile } });
+    if (existing) {
+      return res.status(409).json({ message: "This mobile number is already registered." });
+    }
+
     const customer = await Customer.create({
       name, mobile, imei, email, city, storeLocation, sesId, productPurchased,
     });
