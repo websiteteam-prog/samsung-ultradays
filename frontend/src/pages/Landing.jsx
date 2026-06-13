@@ -19,7 +19,7 @@ export default function Landing() {
         <span className="eyebrow">Store reward program</span>
         <h1>Register, Share & Win</h1>
         <p className="lead">
-          Complete the steps below to claim your complimentary travel adapter and join the celebration on social media.
+          Complete the below steps to win a gift.
         </p>
       </div>
 

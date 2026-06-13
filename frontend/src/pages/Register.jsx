@@ -15,6 +15,9 @@ export default function Register() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [devCode, setDevCode] = useState("");
 
+  // Terms agreement
+  const [agreed, setAgreed] = useState(false);
+
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [done, setDone] = useState(false);
@@ -60,6 +63,7 @@ export default function Register() {
     if (!form.storeLocation.trim()) return "Store is required.";
     if (!form.sesId.trim()) return "SES ID / Store Manager is required.";
     if (!form.productPurchased.trim()) return "Product purchased is required.";
+    if (!agreed) return "Please accept the Terms & Conditions to continue.";
     return "";
   }
 
@@ -162,9 +166,18 @@ export default function Register() {
           <input value={form.productPurchased} onChange={set("productPurchased")} placeholder="e.g. Galaxy S24" />
         </label>
 
+        {/* Terms & Conditions agreement */}
+        <label className="terms-check">
+          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+          <span>
+            I have read and agree to the{" "}
+            <Link to="/terms" target="_blank" rel="noreferrer">Terms &amp; Conditions</Link>.
+          </span>
+        </label>
+
         {err && <div className="alert err">{err}</div>}
 
-        <button className="btn gold" onClick={submit} disabled={busy || !otpVerified}>
+        <button className="btn gold" onClick={submit} disabled={busy || !otpVerified || !agreed}>
           {busy ? "Submitting…" : "Register & unlock gift"}
         </button>
       </div>
