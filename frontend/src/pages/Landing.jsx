@@ -26,9 +26,9 @@ export default function Landing() {
       <div className="gift-banner">
         <span className="ico">🎁</span>
         <div>
-          <strong>Complete the steps below to win a gift</strong>
+          <strong>Unlock Gift</strong>
           <div className="note" style={{ marginTop: 2 }}>
-            Unlock your gift after you register your purchase.
+            After you register the purchase.
           </div>
         </div>
       </div>

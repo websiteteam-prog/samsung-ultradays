@@ -92,8 +92,7 @@ export default function Register() {
           <span className="eyebrow">Step 1 complete</span>
           <h2>You're registered 🎉</h2>
           <p className="lead">
-            You're eligible for the complimentary travel adaptor. Show this screen
-            to the store staff to collect your gift.
+            Proceed to the next step to create your branded frame.
           </p>
           <button className="btn gold" onClick={() => nav("/frame")}>
             Next: create your frame →

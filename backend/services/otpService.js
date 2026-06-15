@@ -24,13 +24,42 @@ export async function sendOtp(mobile) {
     return { sent: true, devCode: code }; // remove devCode for production
   }
 
-  // ---- Real SMS gateway integration goes here ----
-  // await fetch("https://your-sms-gateway/send", {
-  //   method: "POST",
-  //   body: JSON.stringify({ to: mobile, text: `Your OTP is ${code}` }),
-  // });
-  // -------------------------------------------------
+  // ---- Real SMS via uEngage (template-based transactional SMS) ----
+  await sendSmsViaUengage(mobile, code);
   return { sent: true };
+}
+
+// Sends the OTP through uEngage's sendTemplate API.
+// Template 31988 ("User-OTP-Authentication") has a single variable -> the OTP.
+async function sendSmsViaUengage(mobile, code) {
+  const apiToken = process.env.UENGAGE_API_TOKEN;   // secure token from uEngage Profile
+  const senderId = process.env.UENGAGE_SENDER_ID || "HSTGMD";
+  const templateId = process.env.UENGAGE_TEMPLATE_ID || "31988";
+
+  // Build the request URL exactly as per uEngage documentation.
+  // Using apiToken instead of usr+pwd (more secure).
+  const params = new URLSearchParams({
+    apiToken,
+    mobileNo: mobile,        // 10-digit number
+    senderId,
+    templateId,
+    param: code,             // single template variable = the OTP
+    longSms: "1",
+  });
+
+  const url = `https://www.uengage.in/ueapi/sendTemplate?${params.toString()}`;
+
+  try {
+    const res = await fetch(url, { method: "GET" });
+    const text = await res.text();
+    console.log(`[OTP][uengage] mobile=${mobile} status=${res.status} response=${text}`);
+    if (!res.ok) {
+      throw new Error(`uEngage responded ${res.status}: ${text}`);
+    }
+  } catch (err) {
+    console.error("[OTP][uengage] send failed:", err.message);
+    throw new Error("Failed to send OTP SMS. Please try again.");
+  }
 }
 
 // Verify the code. On success, mark the OTP as used (verified) but KEEP the row
