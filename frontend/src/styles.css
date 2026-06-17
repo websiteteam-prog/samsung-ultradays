@@ -1,3 +1,49 @@
+/* ============================================================
+   Samsung Sharp Sans fonts
+   Place the .woff files in:  public/fonts/
+   - SamsungSSHead-*  -> headings (h1, h2, eyebrow, buttons, brand)
+   - SamsungSSBody-*  -> body text (paragraphs, inputs, tables)
+   ============================================================ */
+
+/* Headings font — Samsung Sharp Sans Head */
+@font-face {
+  font-family: "SamsungSharpSans Head";
+  src: url("/fonts/SamsungSSHead-Regular.woff") format("woff");
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: "SamsungSharpSans Head";
+  src: url("/fonts/SamsungSSHead-Light.woff") format("woff");
+  font-weight: 300; font-display: swap;
+}
+@font-face {
+  font-family: "SamsungSharpSans Head";
+  src: url("/fonts/SamsungSSHead-Medium.woff") format("woff");
+  font-weight: 500; font-display: swap;
+}
+@font-face {
+  font-family: "SamsungSharpSans Head";
+  src: url("/fonts/SamsungSSHead-Bold.woff") format("woff");
+  font-weight: 700; font-display: swap;
+}
+
+/* Body font — Samsung Sharp Sans Body */
+@font-face {
+  font-family: "SamsungSharpSans Body";
+  src: url("/fonts/SamsungSSBody-Regular.woff") format("woff");
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: "SamsungSharpSans Body";
+  src: url("/fonts/SamsungSSBody-Light.woff") format("woff");
+  font-weight: 300; font-display: swap;
+}
+@font-face {
+  font-family: "SamsungSharpSans Body";
+  src: url("/fonts/SamsungSSBody-Bold.woff") format("woff");
+  font-weight: 700; font-display: swap;
+}
+
 :root {
   --bg: #0b0a1f;
   --bg-soft: #15123a;
@@ -13,12 +59,16 @@
   --success: #6ee7a8;
   --radius: 16px;
   --maxw: 460px;
+  /* Body text font (default everywhere) */
+  --font-app: "SamsungSharpSans Body", "Segoe UI", system-ui, -apple-system, sans-serif;
+  /* Heading font (titles, buttons, eyebrow) */
+  --font-head: "SamsungSharpSans Head", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-app);
   background:
     radial-gradient(900px 500px at 50% -10%, #2a1f6b 0%, transparent 60%),
     var(--bg);
@@ -30,13 +80,14 @@ body {
 .wrap {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 28px 20px 56px;
+  padding: 20px 20px 56px;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: var(--font-head);
   font-weight: 700;
   letter-spacing: 0.4px;
   font-size: 18px;
@@ -48,6 +99,7 @@ body {
 }
 
 .eyebrow {
+  font-family: var(--font-head);
   text-transform: uppercase;
   letter-spacing: 2px;
   font-size: 11px;
@@ -55,6 +107,7 @@ body {
   font-weight: 700;
 }
 
+h1, h2, h3 { font-family: var(--font-head); }
 h1 { font-size: 28px; line-height: 1.2; margin: 10px 0; }
 h2 { font-size: 20px; margin-bottom: 6px; }
 p.lead { color: var(--text-dim); line-height: 1.6; }
@@ -65,9 +118,15 @@ p.lead { color: var(--text-dim); line-height: 1.6; }
   border-radius: var(--radius);
   padding: 22px;
   margin-top: 18px;
+  /*width: 500px;*/
 }
 
 label.field { display: block; margin-top: 14px; font-size: 13px; color: var(--text-dim); }
+
+input, select, button, textarea {
+  font-family: var(--font-app);
+}
+
 input, select {
   width: 100%;
   margin-top: 6px;
@@ -87,6 +146,7 @@ input:focus, select:focus { outline: 2px solid var(--violet); border-color: tran
   padding: 14px;
   border: none;
   border-radius: 12px;
+  font-family: var(--font-head);
   font-size: 15px; font-weight: 700;
   cursor: pointer;
   background: linear-gradient(135deg, var(--violet), #5a4be0);
@@ -116,7 +176,7 @@ input:focus, select:focus { outline: 2px solid var(--violet); border-color: tran
 .step:hover { border-color: var(--violet); transform: translateY(-1px); }
 .step .num {
   flex: none; width: 34px; height: 34px; border-radius: 10px;
-  display: grid; place-items: center; font-weight: 800;
+  display: grid; place-items: center; font-family: var(--font-head); font-weight: 800;
   background: var(--bg-soft); color: var(--gold); border: 1px solid var(--card-line);
 }
 .step h3 { font-size: 15px; }
@@ -156,7 +216,7 @@ th { color: var(--text-dim); font-weight: 600; background: var(--bg-soft); }
 td a { color: var(--violet-soft); }
 .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
 .stat { background: var(--card); border: 1px solid var(--card-line); border-radius: 12px; padding: 16px; }
-.stat .v { font-size: 26px; font-weight: 800; color: var(--gold); }
+.stat .v { font-family: var(--font-head); font-size: 26px; font-weight: 800; color: var(--gold); }
 .stat .l { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
 .admin-head { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; flex-wrap: wrap; }
 .admin-tabs { display: flex; gap: 8px; margin-top: 16px; }
@@ -235,3 +295,31 @@ td a { color: var(--violet-soft); }
   accent-color: var(--violet); cursor: pointer;
 }
 .terms-check a { color: var(--violet-soft); }
+
+/* IMEI scanner */
+.imei-locked { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+.scan-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(5,4,18,0.8); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.scan-modal {
+  width: 100%; max-width: 420px;
+  background: var(--card); border: 1px solid var(--card-line);
+  border-radius: var(--radius); padding: 18px;
+}
+.scan-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.scan-head strong { font-family: var(--font-head); font-size: 16px; }
+.scan-x {
+  background: transparent; border: none; color: var(--text-dim);
+  font-size: 18px; cursor: pointer; line-height: 1;
+}
+.scan-region {
+  width: 100%; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--card-line); background: #000; min-height: 240px;
+}
+.scan-region video { width: 100% !important; border-radius: 12px; }
+
+/* Show only the first video if the library briefly creates duplicates */
+.scan-region > video:not(:first-of-type),
+.scan-region > canvas { display: none; }

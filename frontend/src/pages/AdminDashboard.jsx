@@ -70,9 +70,13 @@ export default function AdminDashboard() {
 
       {summary && (
         <div className="stat-grid">
+          {/* Registrations card hidden as requested
           <div className="stat"><div className="v">{summary.registrations}</div><div className="l">Registrations</div></div>
+          */}
           <div className="stat"><div className="v">{summary.submissions}</div><div className="l">Completed submissions</div></div>
+          {/* Registered-but-not-submitted card hidden as requested
           <div className="stat"><div className="v">{summary.pending}</div><div className="l">Registered, not submitted</div></div>
+          */}
           <div className="stat"><div className="v">{rows.length}</div><div className="l">Showing (filtered)</div></div>
         </div>
       )}

@@ -21,6 +21,7 @@ router.get(
   requirePartner,
   async (req, res) => {
     try {
+      // ---- Filters on the Submission (date range) ----
       const where = {};
 
       if (req.query.since) {
@@ -43,16 +44,65 @@ router.get(
         }
       }
 
-      const rows = await Submission.findAll({
+      // ---- Filters on the Customer (mobile / imei) ----
+      // mobile and imei live on the Customer, so they are applied
+      // to the included customer association below.
+      const customerWhere = {};
+
+      if (req.query.mobile) {
+        customerWhere.mobile = req.query.mobile.trim();
+      }
+
+      if (req.query.imei) {
+        customerWhere.imei = req.query.imei.trim();
+      }
+
+      const hasCustomerFilter = Object.keys(customerWhere).length > 0;
+
+      // ---- Pagination ----
+      // ?page=1&limit=50  (page is 1-based; limit capped at 500)
+      const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+      const limit = Math.min(
+        Math.max(parseInt(req.query.limit, 10) || 50, 1),
+        500
+      );
+      const offset = (page - 1) * limit;
+
+      const { count, rows } = await Submission.findAndCountAll({
         where,
         include: [
           {
             model: Customer,
-            as: "customer"
+            as: "customer",
+            where: hasCustomerFilter ? customerWhere : undefined,
+            // required:true makes the mobile/imei filter actually
+            // restrict the results (INNER JOIN) when a filter is set.
+            required: hasCustomerFilter
           }
         ],
-        order: [["createdAt", "DESC"]]
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset,
+        distinct: true // correct total count when using include
       });
+
+            const totalPages =
+        Math.ceil(count / limit) || 1;
+
+      // Explicit response when no data found
+      if (count === 0) {
+        return res.status(200).json({
+          success: true,
+          message: "No records found",
+          total: 0,
+          count: 0,
+          page,
+          limit,
+          totalPages,
+          hasNextPage: false,
+          records: []
+        });
+      }
 
       const records = rows.map((s) => {
         const c = s.customer || {};
@@ -68,6 +118,7 @@ router.get(
 
           city: c.city,
           storeLocation: c.storeLocation,
+          sesId: c.sesId,
           productPurchased: c.productPurchased,
 
           giftEligible: c.giftEligible,
@@ -92,7 +143,13 @@ router.get(
 
       return res.json({
         success: true,
-        total: records.length,
+        message: "Records fetched successfully",
+        total: count,        
+        count: records.length, 
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
         records
       });
     } catch (err) {

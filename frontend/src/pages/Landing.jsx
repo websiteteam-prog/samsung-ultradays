@@ -5,8 +5,8 @@ export default function Landing() {
     <>
       {/* Top banner — different image for mobile vs desktop (decorative) */}
       <div className="top-banner">
-        <img className="banner-desktop" src="/samsung.png" alt="" />
-        <img className="banner-mobile" src="/samsung_mobile.png" alt="" />
+        <img className="banner-desktop" src="/samsung_actual.jpg" alt="" />
+        <img className="banner-mobile" src="/mobile-Banner.jpg" alt="" />
       </div>
 
       <div className="wrap">
@@ -17,16 +17,16 @@ export default function Landing() {
 
       <div style={{ marginTop: 28 }}>
         <span className="eyebrow">Store reward program</span>
-        <h1>Register, Share & Win</h1>
+        <h1>Register, Share & Get a Chance to Win!</h1>
         <p className="lead">
-          Complete the below steps to win a gift.
+         Complete the below steps to Get a Chance Win a gift with every purchase.
         </p>
       </div>
 
       <div className="gift-banner">
         <span className="ico">🎁</span>
         <div>
-          <strong>Unlock Gift</strong>
+          <strong>Unlock & Get a Chance to Win</strong>
           <div className="note" style={{ marginTop: 2 }}>
             After you register the purchase.
           </div>
@@ -38,7 +38,7 @@ export default function Landing() {
           <span className="num">1</span>
           <div>
             <h3>Register your purchase</h3>
-            <small>Fill your details to unlock the gift.</small>
+            <small>Fill your details to Unlock & Get a Chance to Win</small>
           </div>
         </Link>
         <Link className="step" to="/frame">

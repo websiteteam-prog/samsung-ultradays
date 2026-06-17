@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/api.js";
+import ImeiScanner from "../components/ImeiScanner.jsx";
+
+// Privacy policy external link — change this URL if needed
+const PRIVACY_URL = "https://www.samsung.com/in/info/privacy/";
 
 export default function Register() {
   const nav = useNavigate();
@@ -15,14 +19,33 @@ export default function Register() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [devCode, setDevCode] = useState("");
 
-  // Terms agreement
+  // Agreements
   const [agreed, setAgreed] = useState(false);
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
+
+  // IMEI barcode scanner
+  const [showScanner, setShowScanner] = useState(false);
+  const [imeiLocked, setImeiLocked] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [done, setDone] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  // Called when the scanner reads a valid 15-digit IMEI
+  function handleImeiDetected(imei) {
+    setForm((f) => ({ ...f, imei }));
+    setImeiLocked(true);
+    setShowScanner(false);
+    setErr("");
+  }
+
+  // Unlock the IMEI field so the user can re-scan or edit
+  function unlockImei() {
+    setImeiLocked(false);
+    setForm((f) => ({ ...f, imei: "" }));
+  }
 
   async function sendOtp() {
     setErr("");
@@ -61,9 +84,10 @@ export default function Register() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return "Please enter a valid email address.";
     if (!form.city.trim()) return "City is required.";
     if (!form.storeLocation.trim()) return "Store is required.";
-    if (!form.sesId.trim()) return "SES ID / Store Manager is required.";
+    if (!form.sesId.trim()) return "SEC HO ID / Store Manager is required.";
     if (!form.productPurchased.trim()) return "Product purchased is required.";
     if (!agreed) return "Please accept the Terms & Conditions to continue.";
+    if (!privacyAgreed) return "Please accept the Privacy Policy to continue.";
     return "";
   }
 
@@ -143,8 +167,28 @@ export default function Register() {
 
         <label className="field">IMEI number *
           <input value={form.imei} onChange={set("imei")} placeholder="15-digit IMEI"
-            inputMode="numeric" maxLength={15} />
+            inputMode="numeric" maxLength={15} disabled={imeiLocked} />
         </label>
+        {!imeiLocked ? (
+          <button className="btn ghost" onClick={() => setShowScanner(true)} style={{ marginTop: 10 }}>
+            📷 Scan IMEI barcode
+          </button>
+        ) : (
+          <div className="imei-locked">
+            <span className="alert ok" style={{ flex: 1, marginTop: 0 }}>IMEI scanned ✓</span>
+            <button className="btn ghost" onClick={unlockImei} style={{ width: "auto", marginTop: 0, padding: "10px 14px" }}>
+              Re-scan
+            </button>
+          </div>
+        )}
+
+        {showScanner && (
+          <ImeiScanner
+            onDetected={handleImeiDetected}
+            onClose={() => setShowScanner(false)}
+          />
+        )}
+
         <label className="field">Email *
           <input value={form.email} onChange={set("email")} placeholder="you@example.com" />
         </label>
@@ -157,27 +201,36 @@ export default function Register() {
           <input value={form.storeLocation} onChange={set("storeLocation")} placeholder="Store name" />
         </label>
 
-        <label className="field">SES ID / Store Manager *
+        <label className="field">SEC HO ID / Store Manager *
           <input value={form.sesId} onChange={set("sesId")} placeholder="SES ID or Store Manager name" />
         </label>
 
         <label className="field">Product purchased *
-          <input value={form.productPurchased} onChange={set("productPurchased")} placeholder="e.g. Galaxy S24" />
+          <input value={form.productPurchased} onChange={set("productPurchased")} placeholder="e.g. S26" />
         </label>
 
         {/* Terms & Conditions agreement */}
         <label className="terms-check">
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
           <span>
-            I have read and agree to the{" "}
+            I have read understood & agree to Samsung {" "}
             <Link to="/terms" target="_blank" rel="noreferrer">Terms &amp; Conditions</Link>.
+          </span>
+        </label>
+
+        {/* Privacy Policy agreement (external link) */}
+        <label className="terms-check">
+          <input type="checkbox" checked={privacyAgreed} onChange={(e) => setPrivacyAgreed(e.target.checked)} />
+          <span>
+            I have read understood & agree to Samsung {" "}
+            <a href={PRIVACY_URL} target="_blank" rel="noreferrer">Privacy Policy</a>.
           </span>
         </label>
 
         {err && <div className="alert err">{err}</div>}
 
-        <button className="btn gold" onClick={submit} disabled={busy || !otpVerified || !agreed}>
-          {busy ? "Submitting…" : "Register & unlock gift"}
+        <button className="btn gold" onClick={submit} disabled={busy || !otpVerified || !agreed || !privacyAgreed}>
+          {busy ? "Submitting…" : "Register"}
         </button>
       </div>
     </div>
