@@ -36,10 +36,15 @@ router.post("/otp/verify", async (req, res) => {
  * STEP 1 — Product purchase & registration
  * Mobile must be OTP-verified first (otp + mobile sent together).
  * All fields mandatory. IMEI exactly 15 digits.
+ * Terms & Privacy must be accepted.
+ * Mobile AND IMEI must each be unique (one registration each).
  * ---------------------------------------------------------------- */
 router.post("/register", async (req, res) => {
   try {
-    const { name, mobile, otp, imei, email, city, storeLocation, sesId, productPurchased } = req.body;
+    const {
+      name, mobile, otp, imei, email, city, storeLocation, sesId, productPurchased,
+      termsAccepted, privacyAccepted,
+    } = req.body;
 
     if (!name || !mobile || !imei || !email || !city || !storeLocation || !sesId || !productPurchased) {
       return res.status(400).json({ message: "All fields are required." });
@@ -53,6 +58,12 @@ router.post("/register", async (req, res) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: "Please enter a valid email address." });
     }
+    if (!termsAccepted) {
+      return res.status(400).json({ message: "Please accept the Terms & Conditions." });
+    }
+    if (!privacyAccepted) {
+      return res.status(400).json({ message: "Please accept the Privacy Policy." });
+    }
 
     // Mobile must have been OTP-verified (during the OTP step on this page)
     const verified = await isMobileVerified(mobile);
@@ -61,13 +72,21 @@ router.post("/register", async (req, res) => {
     }
 
     // Mobile number must be unique — one registration per number
-    const existing = await Customer.findOne({ where: { mobile } });
-    if (existing) {
+    const existingMobile = await Customer.findOne({ where: { mobile } });
+    if (existingMobile) {
       return res.status(409).json({ message: "This mobile number is already registered." });
+    }
+
+    // IMEI must be unique — one registration per device
+    const existingImei = await Customer.findOne({ where: { imei } });
+    if (existingImei) {
+      return res.status(409).json({ message: "This IMEI number is already registered." });
     }
 
     const customer = await Customer.create({
       name, mobile, imei, email, city, storeLocation, sesId, productPurchased,
+      termsAccepted: !!termsAccepted,
+      privacyAccepted: !!privacyAccepted,
     });
 
     res.status(201).json({

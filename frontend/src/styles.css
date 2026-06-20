@@ -30,7 +30,7 @@ body {
 .wrap {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 28px 20px 56px;
+  padding: 20px 20px 56px;
 }
 
 .brand {
@@ -65,6 +65,7 @@ p.lead { color: var(--text-dim); line-height: 1.6; }
   border-radius: var(--radius);
   padding: 22px;
   margin-top: 18px;
+  width: 500px;
 }
 
 label.field { display: block; margin-top: 14px; font-size: 13px; color: var(--text-dim); }

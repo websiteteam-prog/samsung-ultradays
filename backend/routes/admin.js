@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
 import { Admin, Customer, Submission } from "../models/index.js";
 import { requireAdmin } from "../middleware/auth.js";
+import { registerSubmissionsPdf } from "./pdf_route.js";
 
 const router = express.Router();
 
@@ -33,6 +34,11 @@ function dateWhere(query) {
     if (to) where.createdAt[Op.lte] = new Date(to + "T23:59:59");
   }
   return where;
+}
+
+// Turn a boolean into a readable status for admin/CSV/PDF
+function acceptedText(v) {
+  return v ? "Accepted" : "Not accepted";
 }
 
 /* ---------------- Login ---------------- */
@@ -80,6 +86,8 @@ async function getCombined(req) {
       storeLocation: c.storeLocation || "",
       sesId: c.sesId || "",
       productPurchased: c.productPurchased || "",
+      termsAccepted: acceptedText(c.termsAccepted),
+      privacyAccepted: acceptedText(c.privacyAccepted),
       verified: s.verified,
       registeredAt: c.createdAt || null,
       submittedAt: s.createdAt,
@@ -108,6 +116,8 @@ router.get("/export/submissions", requireAdmin, async (req, res) => {
     { key: "storeLocation", label: "Store" },
     { key: "sesId", label: "SES ID / Store Manager" },
     { key: "productPurchased", label: "Product" },
+    { key: "termsAccepted", label: "Terms" },
+    { key: "privacyAccepted", label: "Privacy" },
     { key: "verified", label: "Verified" },
     { key: "registeredAt", label: "Registered At" },
     { key: "submittedAt", label: "Submitted At" },
@@ -118,5 +128,8 @@ router.get("/export/submissions", requireAdmin, async (req, res) => {
   res.attachment("submissions.csv");
   res.send(csv);
 });
+
+
+registerSubmissionsPdf(router);
 
 export default router;

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/api.js";
 
+// Privacy policy external link — change this URL if needed
+const PRIVACY_URL = "https://www.samsung.com/in/info/privacy/";
+
 export default function Register() {
   const nav = useNavigate();
   const [form, setForm] = useState({
@@ -15,8 +18,9 @@ export default function Register() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [devCode, setDevCode] = useState("");
 
-  // Terms agreement
+  // Agreements
   const [agreed, setAgreed] = useState(false);
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -61,9 +65,10 @@ export default function Register() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return "Please enter a valid email address.";
     if (!form.city.trim()) return "City is required.";
     if (!form.storeLocation.trim()) return "Store is required.";
-    if (!form.sesId.trim()) return "SES ID / Store Manager is required.";
+    if (!form.sesId.trim()) return "SEC HO ID / Store Manager is required.";
     if (!form.productPurchased.trim()) return "Product purchased is required.";
     if (!agreed) return "Please accept the Terms & Conditions to continue.";
+    if (!privacyAgreed) return "Please accept the Privacy Policy to continue.";
     return "";
   }
 
@@ -157,26 +162,35 @@ export default function Register() {
           <input value={form.storeLocation} onChange={set("storeLocation")} placeholder="Store name" />
         </label>
 
-        <label className="field">SES ID / Store Manager *
+        <label className="field">SEC HO ID / Store Manager *
           <input value={form.sesId} onChange={set("sesId")} placeholder="SES ID or Store Manager name" />
         </label>
 
         <label className="field">Product purchased *
-          <input value={form.productPurchased} onChange={set("productPurchased")} placeholder="e.g. Galaxy S24" />
+          <input value={form.productPurchased} onChange={set("productPurchased")} placeholder="e.g. S26" />
         </label>
 
         {/* Terms & Conditions agreement */}
         <label className="terms-check">
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
           <span>
-            I have read and agree to the{" "}
+            I have read understood & agree to Samsung {" "}
             <Link to="/terms" target="_blank" rel="noreferrer">Terms &amp; Conditions</Link>.
+          </span>
+        </label>
+
+        {/* Privacy Policy agreement (external link) */}
+        <label className="terms-check">
+          <input type="checkbox" checked={privacyAgreed} onChange={(e) => setPrivacyAgreed(e.target.checked)} />
+          <span>
+            I have read understood & agree to Samsung {" "}
+            <a href={PRIVACY_URL} target="_blank" rel="noreferrer">Privacy Policy</a>.
           </span>
         </label>
 
         {err && <div className="alert err">{err}</div>}
 
-        <button className="btn gold" onClick={submit} disabled={busy || !otpVerified || !agreed}>
+        <button className="btn gold" onClick={submit} disabled={busy || !otpVerified || !agreed || !privacyAgreed}>
           {busy ? "Submitting…" : "Register & unlock gift"}
         </button>
       </div>
