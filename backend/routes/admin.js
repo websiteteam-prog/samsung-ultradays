@@ -24,7 +24,6 @@ function toCsv(rows, columns) {
   return header + "\n" + body;
 }
 
-// Build a date-range WHERE clause from optional ?from=YYYY-MM-DD&to=YYYY-MM-DD
 function dateWhere(query) {
   const where = {};
   const { from, to } = query;
@@ -36,7 +35,6 @@ function dateWhere(query) {
   return where;
 }
 
-// Turn a boolean into a readable status for admin/CSV/PDF
 function acceptedText(v) {
   return v ? "Accepted" : "Not accepted";
 }
@@ -63,15 +61,16 @@ router.get("/summary", requireAdmin, async (req, res) => {
 });
 
 /*
- * Combined view: every submission joined with its registration.
- * This is the single source the admin panel uses — full user journey
- * (registration fields + proof) in one row. Optional date filter.
+ * Combined view: ONLY completed participants (those who submitted
+ * social proof). Each submission is joined with its registration.
+ * Because we start from Submission, register-only users never appear.
+ * Optional date filter on the submission date.
  */
 async function getCombined(req) {
   const where = dateWhere(req.query);
   const rows = await Submission.findAll({
     where,
-    include: [{ model: Customer, as: "customer" }],
+    include: [{ model: Customer, as: "customer", required: true }], // required:true => must have a registration
     order: [["createdAt", "DESC"]],
   });
   return rows.map((s) => {

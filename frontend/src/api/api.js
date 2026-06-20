@@ -35,6 +35,14 @@ export const api = {
       body: JSON.stringify(body),
     }).then(handle),
 
+  // Check a mobile's progress (registered? proof already submitted?)
+  checkStatus: (mobile) =>
+    fetch(`${BASE}/api/status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mobile }),
+    }).then(handle),
+
   submitProof: (fd) =>
     fetch(`${BASE}/api/submit`, { method: "POST", body: fd }).then(handle),
 

@@ -12,8 +12,6 @@ function fileUrl(req, filename) {
 
 /* ----------------------------------------------------------------
  * OTP — request and verify (used during registration, Step 1)
- * No "must be registered" check here, because OTP happens BEFORE
- * the customer record is created.
  * ---------------------------------------------------------------- */
 router.post("/otp/request", async (req, res) => {
   const { mobile } = req.body;
@@ -34,10 +32,9 @@ router.post("/otp/verify", async (req, res) => {
 
 /* ----------------------------------------------------------------
  * STEP 1 — Product purchase & registration
- * Mobile must be OTP-verified first (otp + mobile sent together).
- * All fields mandatory. IMEI exactly 15 digits.
- * Terms & Privacy must be accepted.
- * Mobile AND IMEI must each be unique (one registration each).
+ * Mobile must be OTP-verified first. All fields mandatory.
+ * IMEI exactly 15 digits. Terms & Privacy must be accepted.
+ * Mobile AND IMEI must each be unique.
  * ---------------------------------------------------------------- */
 router.post("/register", async (req, res) => {
   try {
@@ -65,19 +62,16 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Please accept the Privacy Policy." });
     }
 
-    // Mobile must have been OTP-verified (during the OTP step on this page)
     const verified = await isMobileVerified(mobile);
     if (!verified) {
       return res.status(400).json({ message: "Please verify your mobile number with OTP first." });
     }
 
-    // Mobile number must be unique — one registration per number
     const existingMobile = await Customer.findOne({ where: { mobile } });
     if (existingMobile) {
       return res.status(409).json({ message: "This mobile number is already registered." });
     }
 
-    // IMEI must be unique — one registration per device
     const existingImei = await Customer.findOne({ where: { imei } });
     if (existingImei) {
       return res.status(409).json({ message: "This IMEI number is already registered." });
@@ -100,6 +94,42 @@ router.post("/register", async (req, res) => {
 });
 
 /* ----------------------------------------------------------------
+ * STATUS — check a mobile's progress (used by Step 3 page)
+ * Returns whether the mobile is registered and whether the
+ * social-proof submission is already done.
+ *   registered=false           -> not registered yet
+ *   registered=true, done=false -> can do step 3
+ *   registered=true, done=true  -> whole process complete
+ * ---------------------------------------------------------------- */
+router.post("/status", async (req, res) => {
+  try {
+    const { mobile } = req.body;
+    if (!/^\d{10}$/.test(mobile || "")) {
+      return res.status(400).json({ message: "Enter a valid 10-digit mobile number." });
+    }
+
+    const customer = await Customer.findOne({
+      where: { mobile },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (!customer) {
+      return res.json({ registered: false, done: false });
+    }
+
+    const submission = await Submission.findOne({ where: { customerId: customer.id } });
+
+    return res.json({
+      registered: true,
+      done: !!submission,
+      name: customer.name,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Status check failed", error: err.message });
+  }
+});
+
+/* ----------------------------------------------------------------
  * STEP 2 — Optional raw image upload (frame composed on frontend)
  * ---------------------------------------------------------------- */
 router.post("/frame/upload", upload.single("image"), async (req, res) => {
@@ -109,8 +139,7 @@ router.post("/frame/upload", upload.single("image"), async (req, res) => {
 
 /* ----------------------------------------------------------------
  * STEP 3 — Social media proof upload
- * Only mobile + screenshot. Mobile links to the registration.
- * No OTP here (OTP already done at registration).
+ * Mobile links to the registration. Blocks a second submission.
  * ---------------------------------------------------------------- */
 router.post(
   "/submit",
@@ -128,6 +157,12 @@ router.post(
       const screenshot = req.files?.screenshot?.[0];
       if (!screenshot) return res.status(400).json({ message: "Screenshot is required." });
 
+      // Frame (Step 2) is required — can't complete without it
+      const framed = req.files?.framedImage?.[0];
+      if (!framed) {
+        return res.status(400).json({ message: "Please complete Step 2 (create your branded frame) first." });
+      }
+
       const customer = await Customer.findOne({
         where: { mobile },
         order: [["createdAt", "DESC"]],
@@ -136,12 +171,17 @@ router.post(
         return res.status(404).json({ message: "This mobile number is not registered. Please complete Step 1 first." });
       }
 
-      const framed = req.files?.framedImage?.[0];
+      // Block a duplicate submission — process already complete
+      const already = await Submission.findOne({ where: { customerId: customer.id } });
+      if (already) {
+        return res.status(409).json({ message: "Your submission is already complete. You have finished all steps." });
+      }
+
       const submission = await Submission.create({
         customerId: customer.id,
         mobile,
         screenshotPath: screenshot.filename,
-        framedImagePath: framed ? framed.filename : null,
+        framedImagePath: framed.filename,
         verified: true,
       });
 
